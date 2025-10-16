@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MDIHUB Kids - Future Coders Academy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --neon-blue: #0ff0fc;
+            --neon-pink: #ff00ff;
+            --neon-green: #00ff00;
+            --dark-space: #0a0a20;
+            --accent-purple: #b57edc;
+        }
+        
+        html { scroll-behavior: smooth; }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-space);
+            color: white;
+            margin: 0;
+            overflow-x: hidden;
+            padding-top: 90px;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(0, 255, 255, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 80% 70%, rgba(255, 0, 255, 0.1) 0%, transparent 20%);
+        }
+        
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite alternate;
+        }
+        /* Constellation canvas */
+        #constellation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            pointer-events: none;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0.2; }
+            100% { opacity: 1; }
+        }
+        
+        header {
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            margin: 0;
+            background: linear-gradient(90deg, var(--neon-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        .logo span {
+            color: var(--neon-green);
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 10px var(--neon-blue); }
+            to { text-shadow: 0 0 20px var(--accent-purple), 0 0 30px var(--neon-blue); }
+        }
+        
+        @keyframes float {
+            0% { transform: translateX(-50%) translateY(0px); }
+            50% { transform: translateX(-50%) translateY(-15px); }
+            100% { transform: translateX(-50%) translateY(0px); }
+        }
+        
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(10, 10, 40, 0.6);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+            border-bottom: 1px solid rgba(0,255,255,0.15);
+        }
+
+        .main-nav { text-align: center; margin: 10px 0 20px; }
+        .main-nav ul { list-style: none; padding: 0; margin: 0; }
+        .main-nav li { display: inline-block; margin: 6px 8px; }
+        .nav-link {
+            font-family: 'Orbitron', sans-serif;
+            display: inline-block;
+            background: rgba(10, 10, 40, 0.7);
+            color: var(--neon-blue);
+            border: 2px solid var(--neon-blue);
+            padding: 8px 15px;
+            border-radius: 30px;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        .nav-link:hover { background: var(--neon-blue); color: var(--dark-space); box-shadow: 0 0 15px var(--neon-blue); }
+        /* Mobile menu trigger (hamburger) */
+        .menu-trigger {
+            position: absolute;
+            top: 18px;
+            right: 16px;
+            width: 42px;
+            height: 42px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 1px solid rgba(0,255,255,0.25);
+            background: rgba(10,10,40,0.6);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .menu-trigger:hover { box-shadow: 0 0 12px rgba(0,255,255,0.35); transform: translateY(-1px); }
+        .menu-trigger .bar {
+            position: relative;
+            width: 22px;
+            height: 2px;
+            background: var(--neon-blue);
+            box-shadow: 0 0 8px rgba(0,255,255,0.6);
+        }
+        .menu-trigger .bar::before,
+        .menu-trigger .bar::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 22px;
+            height: 2px;
+            background: var(--neon-blue);
+            transition: transform 0.3s cubic-bezier(.55,0,.1,1), opacity 0.2s ease;
+        }
+        .menu-trigger .bar::before { top: -7px; }
+        .menu-trigger .bar::after { top: 7px; }
+        /* X state */
+        body.menu-open .menu-trigger .bar { background: transparent; box-shadow: none; }
+        body.menu-open .menu-trigger .bar::before { transform: translateY(7px) rotate(45deg); }
+        body.menu-open .menu-trigger .bar::after { transform: translateY(-7px) rotate(-45deg); }
+
+        /* Fullscreen overlay menu */
+        .menu-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            display: none;
+            pointer-events: none;
+        }
+        body.menu-open .menu-overlay { display: block; pointer-events: auto; }
+        .menu-overlay .bg {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(1200px 600px at 20% -10%, rgba(255,255,255,0.08), transparent 60%),
+                        radial-gradient(1200px 600px at 120% 110%, rgba(0,255,255,0.10), transparent 60%),
+                        rgba(10,10,40,0.95);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border-top: 1px solid rgba(0,255,255,0.15);
+        }
+        .menu-overlay .slices {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .menu-overlay .slice {
+            position: absolute;
+            width: 180%;
+            height: 28%;
+            left: -40%;
+            background: white;
+            transform: rotate(-45deg);
+            opacity: 0.04;
+            transition: transform 0.6s cubic-bezier(.55,0,.1,1);
+        }
+        .menu-overlay .slice.top { top: -25%; transform: rotate(-45deg) translateY(-120%); }
+        .menu-overlay .slice.mid { top: 32%; transform: rotate(-45deg) scaleY(0); }
+        .menu-overlay .slice.bot { top: 105%; transform: rotate(-45deg) translateY(20%); }
+        body.menu-open .menu-overlay .slice.top { transform: rotate(-45deg) translateY(-10%); }
+        body.menu-open .menu-overlay .slice.mid { transform: rotate(-45deg) scaleY(1); }
+        body.menu-open .menu-overlay .slice.bot { transform: rotate(-45deg) translateY(-105%); }
+        .menu-overlay .menu {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .menu-overlay ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: center;
+        }
+        .menu-overlay li { margin: 14px 0; }
+        .menu-overlay a {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            color: var(--dark-space);
+            text-decoration: none;
+            display: inline-block;
+            padding: 10px 16px;
+            background: var(--neon-blue);
+            border: 2px solid var(--neon-blue);
+            border-radius: 32px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            box-shadow: 0 0 12px rgba(0,255,255,0.35);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .menu-overlay a:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(0,255,255,0.55); }
+
+        /* Scroll lock when menu is open */
+        body.menu-open { overflow: hidden; }
+        
+        .hero {
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+        }
+        
+        .hero h2 {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            color: var(--neon-green);
+        }
+        
+        .hero p {
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto 30px;
+        }
+        
+        .cta-btn {
+            display: inline-block;
+            background: linear-gradient(45deg, var(--accent-purple), var(--neon-blue));
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 1.1rem;
+            margin: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .cta-btn:hover {
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.8);
+            transform: translateY(-3px);
+        }
+        
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            padding: 40px 20px;
+        }
+        
+        .feature-card {
+            background: rgba(20, 20, 50, 0.7);
+            border-radius: 20px;
+            width: 280px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid var(--neon-blue);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px rgba(0, 255, 255, 0.3);
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            z-index: -1;
+            background: linear-gradient(45deg, var(--neon-blue), var(--accent-purple), var(--neon-green));
+            background-size: 200%;
+            border-radius: 22px;
+            animation: borderGlow 3s linear infinite;
+        }
+        
+        @keyframes borderGlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--neon-green);
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            margin: 40px 0 30px;
+            color: var(--accent-purple);
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--neon-blue), var(--accent-purple));
+            border-radius: 3px;
+        }
+        
+        .program-cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px;
+        }
+        
+        .program-card {
+            background: rgba(20, 20, 50, 0.7);
+            border-radius: 15px;
+            width: 280px;
+            padding: 25px;
+            border: 1px solid var(--neon-pink);
+            transition: all 0.3s;
+        }
+        
+        .program-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px rgba(255, 0, 255, 0.3);
+        }
+        
+        .program-card h3 {
+            color: var(--neon-pink);
+            margin-top: 0;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+        
+        .program-card ul {
+            padding-left: 20px;
+        }
+        
+        .program-card li {
+            margin-bottom: 8px;
+            position: relative;
+        }
+        
+        .program-card li::before {
+            content: '▹';
+            color: var(--neon-green);
+            position: absolute;
+            left: -20px;
+        }
+        
+        .pricing-cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px;
+        }
+        
+        .pricing-card {
+            background: rgba(20, 20, 50, 0.7);
+            border-radius: 15px;
+            width: 280px;
+            padding: 25px;
+            border: 1px solid var(--neon-pink);
+            transition: all 0.3s;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px rgba(255, 0, 255, 0.3);
+        }
+        
+        .pricing-card h3 {
+            color: var(--neon-pink);
+            margin-top: 0;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+        
+        .price {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--neon-green);
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .pricing-features {
+            list-style-type: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        
+        .pricing-features li {
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+        
+        .pricing-features li::before {
+            content: '✓';
+            color: var(--neon-green);
+            margin-right: 10px;
+        }
+        
+        .schedule-table {
+            width: 90%;
+            max-width: 900px;
+            margin: 30px auto;
+            border-collapse: collapse;
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .schedule-table th, .schedule-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .schedule-table th {
+            background-color: rgba(0, 255, 255, 0.2);
+            color: var(--neon-blue);
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .schedule-table tr:hover {
+            background-color: rgba(0, 255, 255, 0.1);
+        }
+        
+        .form-container {
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            margin: 40px auto;
+            border: 1px solid var(--neon-green);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--neon-blue);
+        }
+        
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            width: 95%;
+            padding: 13px;
+            border-radius: 8px;
+            border: 1px solid var(--neon-blue);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-family: 'Poppins', sans-serif;
+			
+        }
+        
+        .form-group textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(45deg, var(--neon-blue), var(--accent-purple));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: block;
+            margin: 30px auto 0;
+            width: 200px;
+            text-align: center;
+        }
+        
+        .submit-btn:hover {
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.8);
+            transform: translateY(-3px);
+        }
+        
+        .contact-info {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            margin: 40px 0;
+        }
+        
+        .contact-card {
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            width: 290px;
+            border: 1px solid var(--neon-pink);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
+        }
+        .contact-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--neon-blue);
+            box-shadow: 0 10px 25px rgba(0, 255, 255, 0.3);
+            background: rgba(10, 30, 60, 0.85);
+        }
+        .contact-link { color: var(--neon-blue); text-decoration: none; transition: color 0.3s ease, text-shadow 0.3s ease; }
+        .contact-link:hover { color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
+        
+        .contact-card h3 {
+            color: var(--neon-pink);
+            margin-top: 0;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 50px;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+            color: var(--neon-blue);
+        }
+        .social-icon svg { width: 22px; height: 22px; fill: currentColor; }
+        
+        .social-icon:hover { transform: rotate(20deg) scale(1.2); }
+        .social-icon.yt:hover { background: #FF0000; color: #ffffff; }
+        .social-icon.ig:hover { 
+            background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+            color: #ffffff;
+        }
+        .social-icon.tt:hover { background: #000000; color: #25F4EE; }
+        .social-icon.fb:hover { background: #1877F2; color: #ffffff; }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .footer-links a {
+            color: var(--neon-blue);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--neon-green);
+            text-decoration: underline;
+        }
+        .msg-success { color: var(--neon-green); text-align: center; margin-top: 12px; }
+        .msg-error { color: #ff8aa0; text-align: center; margin-top: 12px; }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 1.8rem;
+            }
+            
+            .hero h2 {
+                font-size: 1.8rem;
+            }
+            
+            .nav-btn { padding: 6px 12px; font-size: 0.8rem; }
+            /* Hide desktop nav, show hamburger */
+            .main-nav { display: none; }
+            .menu-trigger { display: inline-flex; }
+            
+            .pricing-cards {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .schedule-table {
+                font-size: 0.9rem;
+            }
+            
+            .schedule-table th, .schedule-table td {
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars-container"></div>
+    <canvas id="constellation" aria-hidden="true"></canvas>
+    
+    <header>
+        
+      <h1 class="logo">MDIHUB<span>Kids</span></h1>
+        <p>Empowering Young Minds Through Coding</p>
+        
+        <nav class="main-nav">
+            <ul>
+                <li><a class="nav-link" href="#home">Home</a></li>
+                <li><a class="nav-link" href="#about">About</a></li>
+                <li><a class="nav-link" href="#why-us">Why Us</a></li>
+                <li><a class="nav-link" href="#programs">Programs</a></li>
+                <li><a class="nav-link" href="#resources">Resources</a></li>
+                <li><a class="nav-link" href="#pricing">Pricing</a></li>
+                <li><a class="nav-link" href="#schedule">Schedule</a></li>
+                <li><a class="nav-link" href="#register">Register</a></li>
+                <li><a class="nav-link" href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+        <button class="menu-trigger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+            <span class="bar"></span>
+        </button>
+    </header>
+    <div class="menu-overlay" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Navigation Menu">
+        <div class="bg"></div>
+        <div class="slices">
+            <i class="slice top"></i>
+            <i class="slice mid"></i>
+            <i class="slice bot"></i>
+        </div>
+        <div class="menu">
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#why-us">Why Us</a></li>
+                <li><a href="#programs">Programs</a></li>
+                <li><a href="#resources">Resources</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="#schedule">Schedule</a></li>
+                <li><a href="#register">Register</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </div>
+ 
+    <section class="hero" id="home">
+        <h2>Join MDIHUB Kids Coding Academy</h2>
+        <p>Give your child a head start in the digital world. Our fun, hands-on program teaches essential tech skills to children aged 5-14 in Mahikeng.</p>
+        
+        <a href="#register" class="cta-btn">REGISTER NOW</a>
+        <a href="#programs" class="cta-btn">LEARN MORE</a>
+    </section>
+    
+    <h2 class="section-title" id="about">Why Choose Our Academy?</h2>
+    <p style="text-align: center; max-width: 800px; margin: 0 auto 30px;">We're bridging the digital gap in Mahikeng by providing accessible, engaging tech education for children.</p>
+    
+    <section class="features" id="why-us">
+        <div class="feature-card">
+            <div class="feature-icon">👐</div>
+            <h3>Hands-On Learning</h3>
+            <p>Kids learn by doing with real coding projects and robotics kits, not just watching or listening.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Age-Appropriate</h3>
+            <p>Specialized tracks for different age groups ensure each child learns at the right pace.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">🏆</div>
+            <h3>Competition Ready</h3>
+            <p>We prepare students for local and international coding and robotics competitions.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">🌍</div>
+            <h3>Community Focus</h3>
+            <p>Regular showcase events let students present their work to family and the community.</p>
+        </div>
+    </section>
+    
+    <h2 class="section-title" id="programs">Our Programs</h2>
+    <p style="text-align: center; max-width: 800px; margin: 0 auto 30px;">We offer age-appropriate coding and robotics programs designed to spark creativity and build confidence.</p>
+    
+    <div class="program-cards">
+        <div class="program-card">
+            <h3>Ages 5-9: Beginner Coding & Robotics</h3>
+            <ul>
+                <li>Introduction to computer basics</li>
+                <li>ScratchJr/Scratch animations</li>
+                <li>LEGO WeDo robotics through fun, interactive projects</li>
+                <li>Unplugged coding activities</li>
+            </ul>
+        </div>
+        
+        <div class="program-card">
+            <h3>Ages 10-14: Advanced Coding & Robotics</h3>
+            <ul>
+                <li>Game development</li>
+                <li>Physical computing</li>
+                <li>Python basics</li>
+                <li>Competition preparation</li>
+            </ul>
+        </div>
+        
+        <div class="program-card">
+            <h3>All Ages: Competitions & Showcases</h3>
+            <ul>
+                <li>FIRST LEGO League</li>
+                <li>Africa Code Week</li>
+                <li>World Robot Olympiad</li>
+                <li>Termly showcase events</li>
+            </ul>
+        </div>
+    </div>
+    
+    <h2 class="section-title" id="resources">Resources</h2>
+    <p style="text-align: center; max-width: 800px; margin: 0 auto 30px;">Helpful tools and guides for students and parents to keep learning at home.</p>
+    
+    <section class="features">
+        <div class="feature-card">
+            <div class="feature-icon">🧑‍💻</div>
+            <h3>Student Tools</h3>
+            <p>Practice coding and explore robotics with these free, child-friendly platforms.</p>
+            <ul style="text-align: left; font-size: 0.9rem;">
+                <li>Scratch (Block coding)</li>
+                <li>Code.org Courses</li>
+                <li>MakeCode for micro:bit</li>
+                <li>Tinkercad Circuits</li>
+            </ul>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">👪</div>
+            <h3>For Parents</h3>
+            <p>Guides to support your child's learning journey and stay informed.</p>
+            <ul style="text-align: left; font-size: 0.9rem;">
+                <li>Academy Handbook (PDF)</li>
+                <li>Term Calendar</li>
+                <li>Safety & Device Setup Tips</li>
+            </ul>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">📥</div>
+            <h3>Downloads</h3>
+            <p>Printable sheets and starter files used in class.</p>
+            <ul style="text-align: left; font-size: 0.9rem;">
+                <li>Scratch Starter Project</li>
+                <li>Arduino Blink Sketch</li>
+                <li>Parent Consent Form</li>
+            </ul>
+        </div>
+    </section>
+    
+    <h2 class="section-title" id="pricing">Affordable Pricing</h2>
+    <p style="text-align: center; max-width: 800px; margin: 0 auto 30px;">Quality tech education that fits your family's budget.</p>
+    
+    <div class="pricing-cards">
+        <div class="pricing-card">
+            <h3>Full Term Payment</h3>
+            <div class="price">R1,000/term</div>
+            <p style="text-align: center; font-size: 0.9rem;">Pay upfront and save R200</p>
+            <ul class="pricing-features">
+                <li>3 classes per week</li>
+                <li>Dedicated equipment</li>
+                <li>Advanced projects</li>
+                <li>Priority support</li>
+                <li>Showcase participation</li>
+                <li>Competition eligibility</li>
+                <li>10% sibling discount</li>
+            </ul>
+            <a href="#register" class="cta-btn" style="width: 80%; margin: 0; text-align: center; display: block;">Get Started</a>
+        </div>
+        
+        <div class="pricing-card">
+            <h3>Instalment Plan</h3>
+            <div class="price">R1,200/term</div>
+            <p style="text-align: center; font-size: 0.9rem;">4 monthly payments of R300</p>
+            <ul class="pricing-features">
+                <li>3 classes per week</li>
+                <li>Dedicated equipment</li>
+                <li>Advanced projects</li>
+                <li>Priority support</li>
+                <li>Showcase participation</li>
+                <li>Competition eligibility</li>
+                <li>10% sibling discount</li>
+            </ul>
+            <a href="#register" class="cta-btn" style="width: 80%; margin: 0; text-align: center; display: block;">Get Started</a>
+        </div>
+        
+        <div class="pricing-card">
+            <h3>Sibling Discount</h3>
+            <div class="price">R900/term</div>
+            <p style="text-align: center; font-size: 0.9rem;">For 2nd child and subsequent siblings</p>
+            <ul class="pricing-features">
+                <li>10% off regular price</li>
+                <li>All Standard benefits</li>
+                <li>Shared equipment</li>
+                <li>Family learning environment</li>
+                <li>Joint projects</li>
+                <li>Flexible payment options</li>
+                <li>4 payments of R270 each</li>
+            </ul>
+            <a href="#register" class="cta-btn" style="width: 80%; margin: 0; text-align: center; display: block;">Get Started</a>
+        </div>
+    </div>
+
+    <h2 class="section-title" id="faq">FAQ</h2>
+    <div class="program-cards" style="padding-top: 0;">
+        <div class="program-card">
+            <h3>What ages do you accept?</h3>
+            <ul>
+                <li>Our core programs are designed for ages 5–14.</li>
+                <li>Competitions and showcases are open to all enrolled students.</li>
+            </ul>
+        </div>
+        <div class="program-card">
+            <h3>Do kids need prior experience?</h3>
+            <ul>
+                <li>No. We start from basics and group by experience level.</li>
+                <li>Advanced tracks are available for returning learners.</li>
+            </ul>
+        </div>
+        <div class="program-card">
+            <h3>What equipment is required?</h3>
+            <ul>
+                <li>We provide devices and robotics kits for classes.</li>
+                <li>Home practice uses free, child‑friendly platforms.</li>
+            </ul>
+        </div>
+    </div>
+    
+    <h2 class="section-title" id="schedule">Program Schedule</h2>
+    <p style="text-align: center; max-width: 800px; margin: 0 auto 30px;">Our structured curriculum runs in four terms throughout the year with classes three times a week.</p>
+    
+    <table class="schedule-table">
+        <thead>
+            <tr>
+                <th>Term</th>
+                <th>Dates</th>
+                <th>Theme</th>
+                <th>Focus Areas</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Term 1</td>
+                <td>29 Aug - 4 Dec 2025</td>
+                <td>Getting Started with Code</td>
+                <td>Computer Basics, Scratch basics, LEGO WeDo, TinkerCAD intro</td>
+            </tr>
+            <tr>
+                <td>Term 2</td>
+                <td>19 Jan - 26 Mar 2026</td>
+                <td>From Code to Robots</td>
+                <td>Advanced Scratch, LEGO Spike Prime, Arduino</td>
+            </tr>
+            <tr>
+                <td>Term 3</td>
+                <td>13 Apr - 18 Jun 2026</td>
+                <td>Real-World Problem Solvers</td>
+                <td>Python basics, Arduino, robotics challenges</td>
+            </tr>
+            <tr>
+                <td>Term 4</td>
+                <td>13 Jul - 17 Sep 2026</td>
+                <td>Show What You Can Do!</td>
+                <td>Final projects, competitions, showcase prep</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <p style="text-align: center; font-size: 0.9rem; margin-top: -15px;">&nbsp;</p>
+    <p style="text-align: center; font-size: 0.9rem; margin-top: -15px;"> Class Days: Monday, Tuesday, Thursday (90 minutes each)</p>
+<p style="text-align: center; font-size: 0.9rem; margin-top: -15px;"><br>
+Locations: MDiHub </p>
+<h2 class="section-title" id="register">Register Your Child</h2>
+    <p style="text-align: center; max-width: 800px; margin: 0 auto 30px;">Secure your child's spot in our upcoming term. Limited spaces available.</p>
+    
+    <form id="registrationForm" class="form-container">
+        <div class="form-group">
+            <label for="parent-name">Parent/Guardian Name</label>
+            <input type="text" id="parent-name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="child-name">Child's Name</label>
+            <input type="text" id="child-name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="child-age">Child's Age</label>
+            <input type="number" id="child-age" min="5" max="14" required>
+        </div>
+
+        <div class="form-group">
+            <label for="program">Program Interest</label>
+            <select id="program" required>
+                <option value="">Select a program</option>
+                <option value="5-9">Ages 5-9: Beginner Coding & Robotics</option>
+                <option value="10-14">Ages 10-14: Advanced Coding & Robotics</option>
+
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="location">Preferred Location</label>
+            <select id="location" required>
+                <option value="">Select location</option>
+                <option value="mdihub">MDiHub 
+				</option>
+              
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="notes">Additional Notes</label>
+            <textarea id="notes"></textarea>
+        </div>
+        
+        <button type="submit" class="submit-btn">Submit Registration</button>
+        <div class="msg-success" id="successMsg"></div>
+        <div class="msg-error" id="errorMsg"></div>
+    </form>
+    
+    <h2 class="section-title" id="contact">Get In Touch</h2>
+    <p style="text-align: center; max-width: 800px; margin: 0 auto 30px;">Have questions? We're here to help you find the right program for your child.</p>
+    
+    <div class="contact-info">
+        <div class="contact-card">
+            <h3>Our Location</h3>
+            <p>Mafikeng Digital Innovation Hub</p>
+          <p><br>
+              <a href="https://www.google.com/maps/search/?api=1&query=2696%20James%20Watt%20Cres%2C%20Industrial%20Site%2C%20Mahikeng%2C%20North%20West%20Province%2C%20South%20Africa" target="_blank" rel="noopener" class="contact-link">2696 James Watt Cres, Industrial Site<br>
+              Mahikeng, North West Province, South Africa</a></p>
+           
+			<h3>Email Us</h3>
+			<p><a href="https://mail.google.com/mail/?view=cm&fs=1&to=info@mafihub.co.za" target="_blank" rel="noopener" class="contact-link">info@mafihub.co.za</a></p>
+			<h3 style="margin-top: 20px;">Call Us</h3>
+            <p><a href="https://wa.me/27815797317" target="_blank" rel="noopener" class="contact-link">+27 81 579 7317</a></p>
+<h3> Open</h3>
+<p>Monday,Tuesday &amp; Thursday: 3:30pm-5pm</p>
+<p>&nbsp;</p>
+			
+        </div>
+        
+      
+        
+        <div class="contact-card">
+            <h3>Enquiries
+            
+            </h3>
+            <form id="contactForm">
+                <div class="form-group">
+                    <input type="text" id="contact-name" placeholder="Your Name" style="margin-bottom: 10px;" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="contact-email" placeholder="Email Address" style="margin-bottom: 10px;" required>
+                </div>
+                <div class="form-group">
+                    <input type="tel" id="contact-phone" placeholder="Phone Number" style="margin-bottom: 10px;" required>
+                </div>
+                <div class="form-group">
+                    <select id="contact-subject" style="margin-bottom: 10px;" title="Message subject" required>
+                        <option value="">Select a subject</option>
+                        <option value="Program Inquiry">Program Inquiry</option>
+                        <option value="Registration Help">Registration Help</option>
+                        <option value="General Question">General Question</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <textarea id="contact-message" placeholder="Your Message" style="height: 80px;" required></textarea>
+                </div>
+                <button type="submit" class="submit-btn" style="width: 100%; margin-top: 10px;">Send Message</button>
+                <div class="msg-success" id="contactSuccess"></div>
+                <div class="msg-error" id="contactError"></div>
+            </form>
+        </div>
+    </div>
+    
+    <footer>
+        <h3 style="margin-bottom: 10px; color: var(--neon-blue);">MDIHUB Kids</h3>
+        <p>Empowering young minds in Mahikeng through coding and robotics education since 2025.</p>
+        <div class="footer-links">
+            <a href="#home">Home</a>
+            <a href="#about">About</a>
+            <a href="#why-us">Why Us</a>
+            <a href="#programs">Programs</a>
+            <a href="#resources">Resources</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#schedule">Schedule</a>
+            <a href="#register">Register</a>
+            <a href="#faq">FAQ</a>
+            <a href="#contact">Contact</a>
+        </div>
+        <div class="social-icons">
+            <a class="social-icon yt" href="https://youtube.com/@mihubmih?si=fwWQmFTdsSf1gI1R" target="_blank" rel="noopener" aria-label="YouTube">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23.5 6.2a3.03 3.03 0 0 0-2.13-2.14C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.37.56A3.03 3.03 0 0 0 .5 6.2 31.6 31.6 0 0 0 0 12a31.6 31.6 0 0 0 .5 5.8 3.03 3.03 0 0 0 2.13 2.14C4.5 20.5 12 20.5 12 20.5s7.5 0 9.37-.56A3.03 3.03 0 0 0 23.5 17.8 31.6 31.6 0 0 0 24 12a31.6 31.6 0 0 0-.5-5.8zM9.75 15.5v-7l6 3.5-6 3.5z"/></svg>
+            </a>
+            <a class="social-icon ig" href="https://www.instagram.com/mdi_hub/profilecard/?igsh=MXg0aXZsbTg1MWczOA==" target="_blank" rel="noopener" aria-label="Instagram">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A5.5 5.5 0 1 1 6.5 13 5.5 5.5 0 0 1 12 7.5zm0 2A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5zm6.25-3.25a1.25 1.25 0 1 1-1.25 1.25 1.25 1.25 0 0 1 1.25-1.25z"/></svg>
+            </a>
+            <a class="social-icon tt" href="https://tiktok.com/@mdihub" target="_blank" rel="noopener" aria-label="TikTok">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8.5c-2.5 0-4.7-1.4-5.8-3.5V16a5.5 5.5 0 1 1-5.5-5.5c.3 0 .7 0 1 .1V13a3 3 0 1 0 3 3V2h3a6.5 6.5 0 0 0 4.3 4.3V8.5z"/></svg>
+            </a>
+            <a class="social-icon fb" href="https://www.facebook.com/Mafihub" target="_blank" rel="noopener" aria-label="Facebook">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7h-2.3V12h2.3V9.8c0-2.3 1.3-3.6 3.4-3.6.99 0 2.03.18 2.03.18v2.23h-1.14c-1.12 0-1.47.7-1.47 1.42V12h2.5l-.4 2.9h-2.1v7A10 10 0 0 0 22 12z"/></svg>
+            </a>
+        </div>
+        <p>© 2025 MDIHUB Kids Coding Academy. All Rights Reserved.</p>
+    </footer>
+
+     <script>
+        // Create stars background
+        function createStars() {
+            const container = document.getElementById('stars-container');
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = `${Math.random() * 3}px`;
+                star.style.height = star.style.width;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 2}s`;
+                container.appendChild(star);
+            }
+        }
+
+        // Constellation background
+        function createConstellation() {
+            const canvas = document.getElementById('constellation');
+            if (!canvas) return;
+
+            const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (prefersReduced) {
+                // Keep canvas empty for users who prefer reduced motion
+                return () => {};
+            }
+
+            const ctx = canvas.getContext('2d');
+            const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+            let width = 0;
+            let height = 0;
+
+            function resize() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = Math.floor(width * dpr);
+                canvas.height = Math.floor(height * dpr);
+                canvas.style.width = width + 'px';
+                canvas.style.height = height + 'px';
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            const baseDensity = (width * height) / 18000; // tuned for visuals
+            const isSmall = width < 768;
+            const count = Math.min(200, Math.max(40, Math.floor(baseDensity * (isSmall ? 0.6 : 1))));
+
+            const themeBlue = getComputedStyle(document.documentElement).getPropertyValue('--neon-blue').trim() || '#0ff0fc';
+            const themePurple = getComputedStyle(document.documentElement).getPropertyValue('--accent-purple').trim() || '#b57edc';
+
+            const particles = [];
+            function rand(min, max) { return Math.random() * (max - min) + min; }
+
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: rand(0, width),
+                    y: rand(0, height),
+                    vx: rand(-0.3, 0.3),
+                    vy: rand(-0.3, 0.3),
+                    r: rand(0.6, 1.8)
+                });
+            }
+
+            const mouse = { x: width / 2, y: height / 2, active: false };
+            window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.active = true; });
+            window.addEventListener('mouseout', () => { mouse.active = false; });
+
+            function step() {
+                ctx.clearRect(0, 0, width, height);
+
+                // Update and draw dots
+                ctx.fillStyle = themeBlue;
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+
+                    // gentle mouse attraction
+                    if (mouse.active) {
+                        const dx = mouse.x - p.x;
+                        const dy = mouse.y - p.y;
+                        const dist2 = dx * dx + dy * dy;
+                        if (dist2 < 16000) { // 126px radius
+                            p.vx += dx * 0.000005;
+                            p.vy += dy * 0.000005;
+                        }
+                    }
+
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    // bounce on edges
+                    if (p.x < 0 || p.x > width) p.vx *= -1;
+                    if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Connect lines
+                const maxDist = isSmall ? 90 : 130;
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const a = particles[i];
+                        const b = particles[j];
+                        const dx = a.x - b.x;
+                        const dy = a.y - b.y;
+                        const d = Math.hypot(dx, dy);
+                        if (d < maxDist) {
+                            const t = 1 - d / maxDist;
+                            const alpha = 0.15 * t;
+                            ctx.strokeStyle = `rgba(11, 244, 252, ${alpha})`;
+                            ctx.lineWidth = Math.max(0.4, 1.2 * t);
+                            ctx.beginPath();
+                            ctx.moveTo(a.x, a.y);
+                            ctx.lineTo(b.x, b.y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                // subtle purple glow overlay
+                const grad = ctx.createRadialGradient(width*0.75, height*0.25, 0, width*0.75, height*0.25, Math.max(width, height)*0.9);
+                grad.addColorStop(0, themePurple + '11');
+                grad.addColorStop(1, '#00000000');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, width, height);
+
+                anim = requestAnimationFrame(step);
+            }
+
+            let anim = requestAnimationFrame(step);
+
+            // Return cleanup
+            return () => {
+                cancelAnimationFrame(anim);
+                window.removeEventListener('resize', resize);
+            };
+        }
+        
+        // Links use native anchor scrolling via CSS scroll-behavior
+
+        // Helpers for dedupe-safe inputs
+        function normalizeEmail(value) {
+            return (value || '').trim().toLowerCase();
+        }
+        function normalizePhone(value) {
+            // keep only digits; adapt if you want to preserve leading +
+            const digitsOnly = ((value || '').match(/\d+/g) || []).join('');
+            return digitsOnly;
+        }
+        
+        // Initialize everything when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            createStars();
+            const cleanupConstellation = createConstellation();
+            
+            // Add animation to registration form when scrolled to
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            document.querySelectorAll('.form-container, .program-card, .feature-card').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'all 0.5s ease-out';
+                observer.observe(el);
+            });
+
+            // Mobile menu toggle
+            const bodyEl = document.body;
+            const trigger = document.querySelector('.menu-trigger');
+            const overlay = document.getElementById('mobile-menu');
+            const overlayLinks = overlay ? overlay.querySelectorAll('a') : [];
+            const bg = overlay ? overlay.querySelector('.bg') : null;
+
+            function openMenu() {
+                bodyEl.classList.add('menu-open');
+                if (trigger) trigger.setAttribute('aria-expanded', 'true');
+            }
+            function closeMenu() {
+                bodyEl.classList.remove('menu-open');
+                if (trigger) trigger.setAttribute('aria-expanded', 'false');
+            }
+            function toggleMenu() {
+                if (bodyEl.classList.contains('menu-open')) closeMenu(); else openMenu();
+            }
+
+            if (trigger) {
+                trigger.addEventListener('click', toggleMenu);
+            }
+            if (bg) {
+                bg.addEventListener('click', closeMenu);
+            }
+            if (overlayLinks && overlayLinks.length) {
+                overlayLinks.forEach(link => link.addEventListener('click', closeMenu));
+            }
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeMenu();
+            });
+
+            // Supabase registration submit
+            const supabaseUrl = 'https://uctrpljdpysxbimctzjc.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjdHJwbGpkcHlzeGJpbWN0empjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMjkzMDMsImV4cCI6MjA3MTcwNTMwM30.9xCUnoVmH8atCR_Ji89isOb_tzUeZ04zouRb8i8feRA';
+            const sb = window.supabase ? window.supabase.createClient(supabaseUrl, supabaseKey) : null;
+            const regForm = document.getElementById('registrationForm');
+            const successMsg = document.getElementById('successMsg');
+            const errorMsg = document.getElementById('errorMsg');
+            if (sb && regForm) {
+                regForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    if (successMsg) successMsg.textContent = '';
+                    if (errorMsg) errorMsg.textContent = '';
+
+                    const payload = {
+                        parent_name: (document.getElementById('parent-name') || {}).value || '',
+                        email: normalizeEmail((document.getElementById('email') || {}).value || ''),
+                        phone: normalizePhone((document.getElementById('phone') || {}).value || ''),
+                        child_name: (document.getElementById('child-name') || {}).value || '',
+                        child_age: parseInt((document.getElementById('child-age') || {}).value || '0', 10),
+                        program_interest: (document.getElementById('program') || {}).value || '',
+                        preferred_location: (document.getElementById('location') || {}).value || '',
+                        notes: (document.getElementById('notes') || {}).value || ''
+                    };
+
+                    try {
+                        // Insert only; database unique constraint blocks duplicates
+                        const { error } = await sb.from('registrations').insert([payload]);
+                        if (error) throw error;
+                        if (successMsg) successMsg.textContent = 'Registration submitted successfully!';
+                        regForm.reset();
+                    } catch (err) {
+                        const msg = (err && err.code === '23505')
+                            ? 'A registration with this email/phone already exists.'
+                            : (err && err.message) ? `Error: ${err.message}` : 'Error submitting registration. Please try again.';
+                        if (errorMsg) errorMsg.textContent = msg;
+                        // eslint-disable-next-line no-console
+                        console.error(err);
+                    }
+                });
+            }
+
+            // Supabase contact form submit
+            const contactForm = document.getElementById('contactForm');
+            const contactSuccess = document.getElementById('contactSuccess');
+            const contactError = document.getElementById('contactError');
+            if (sb && contactForm) {
+                contactForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    if (contactSuccess) contactSuccess.textContent = '';
+                    if (contactError) contactError.textContent = '';
+
+                    const messagePayload = {
+                        name: (document.getElementById('contact-name') || {}).value || '',
+                        email: normalizeEmail((document.getElementById('contact-email') || {}).value || ''),
+                        phone: normalizePhone((document.getElementById('contact-phone') || {}).value || ''),
+                        subject: (document.getElementById('contact-subject') || {}).value || '',
+                        message: (document.getElementById('contact-message') || {}).value || ''
+                    };
+
+                    try {
+                        const { error } = await sb.from('contact_messages').insert([messagePayload]);
+                        if (error) throw error;
+                        if (contactSuccess) contactSuccess.textContent = 'Message sent! We will get back to you soon.';
+                        contactForm.reset();
+                    } catch (err) {
+                        const msg = (err && err.code === '23505')
+                            ? 'A message from this email already exists.'
+                            : (err && err.message) ? `Error: ${err.message}` : 'Error sending message. Please try again.';
+                        if (contactError) contactError.textContent = msg;
+                        // eslint-disable-next-line no-console
+                        console.error(err);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
